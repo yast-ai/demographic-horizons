@@ -1,20 +1,19 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useConvexAuth, useAction, useMutation } from 'convex/react'
-import { AlertTriangle, Download, Settings2, Sparkles } from 'lucide-react'
+import { Download, Settings2, Sparkles } from 'lucide-react'
 import { api } from '../../convex/_generated/api'
 import { DEFAULT_COUNTRY_ID, getCountryById } from '#/lib/data/countries'
-import { runSimulation } from '#/lib/simulation/engine'
+import { runSimulation, formatPopulation } from '#/lib/simulation/engine'
 import { buildScenario, MIGRATION_POLICY_LABELS, PRESET_SCENARIOS } from '#/lib/simulation/policies'
 import type { HorizonYears, MigrationPolicy } from '#/lib/simulation/types'
 import { PolicyDrawer } from '#/components/simulation/PolicyDrawer'
-import { ScenarioNarrative } from '#/components/simulation/ScenarioNarrative'
-import { SystemsPanel } from '#/components/simulation/SystemsPanel'
 import { TimelineScrubber } from '#/components/simulation/TimelineScrubber'
 import {
+  HorizonTabs,
+  IncomeChart,
   MetricsGrid,
-  PopulationAreaChart,
-  ProjectionChart,
+  PopulationChart,
 } from '#/components/simulation/ProjectionChart'
 import { captureEvent } from '#/integrations/posthog/provider'
 
@@ -69,6 +68,7 @@ function SimulatePage() {
   }, [countryId, comparePolicy])
 
   const country = getCountryById(countryId)
+  const yearSnap = result.trajectory[yearIndex] ?? result.baseline
 
   useEffect(() => {
     setSliders(PRESET_SCENARIOS[migrationPolicy])
@@ -136,104 +136,99 @@ function SimulatePage() {
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `demographic-horizons-${countryId}-${migrationPolicy}.json`
+    a.download = `popline-${countryId}-${migrationPolicy}.json`
     a.click()
     URL.revokeObjectURL(url)
     captureEvent('simulation_exported', { country: countryId, policy: migrationPolicy })
   }
 
   return (
-    <div className="min-h-screen bg-paper">
-      <section className="border-b border-border bg-gradient-to-b from-white to-paper">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-            <div className="max-w-2xl">
-              <p className="text-xs font-semibold uppercase tracking-[0.25em] text-sage">
-                World simulation · {MIGRATION_POLICY_LABELS[migrationPolicy]}
-              </p>
-              <h1 className="mt-2 font-display text-4xl text-ink sm:text-5xl">
+    <div className="min-h-screen bg-paper-warm">
+      <section className="border-b border-border bg-white">
+        <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-semibold text-ink sm:text-3xl">
                 {country?.name}
               </h1>
-              <p className="mt-3 text-sm leading-relaxed text-ink-muted">
-                Baseline {country?.dataYear}: TFR {country?.tfr}, life expectancy{' '}
-                {country?.lifeExpectancy} yrs, net migration {country?.netMigrationRate}
-                /1,000. Scrub through decades to see how policy reshapes people,
-                economy, health, and wealth.
+              <p className="mt-1 text-sm text-ink-muted">
+                Policy: <strong className="text-ink">{MIGRATION_POLICY_LABELS[migrationPolicy]}</strong>
+                {comparePolicy && (
+                  <> · Comparing with <strong className="text-ink">{MIGRATION_POLICY_LABELS[comparePolicy]}</strong></>
+                )}
               </p>
             </div>
             <button
               type="button"
               onClick={() => setDrawerOpen(true)}
-              className="inline-flex shrink-0 items-center gap-2 self-start rounded-sm border border-border bg-white px-5 py-3 text-sm font-semibold text-ink shadow-sm transition hover:border-accent"
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-medium text-ink hover:bg-paper-warm"
             >
               <Settings2 size={16} />
-              Policy pathways
+              Change country or policy
             </button>
           </div>
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6">
+        {/* Plain-English summary */}
+        <div className="rounded-xl border border-border bg-white p-5">
+          <p className="text-sm text-ink-muted">In {yearSnap.year}, this country has</p>
+          <p className="mt-1 text-xl font-semibold text-ink">
+            {formatPopulation(yearSnap.population)} people · median age {yearSnap.medianAge} · ${(yearSnap.gdpPerCapita / 1000).toFixed(0)}k income per person
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <TimelineScrubber
+            baselineYear={result.baselineYear}
+            maxYears={50}
+            yearIndex={yearIndex}
+            onChange={setYearIndex}
+            onHorizonJump={handleHorizonJump}
+          />
+          <HorizonTabs horizon={horizon} onChange={(h) => { setHorizon(h); setYearIndex(h) }} />
+        </div>
+
+        <div>
+          <p className="mb-3 text-sm font-medium text-ink-muted">Key numbers at {2026 + horizon}</p>
+          <MetricsGrid result={result} horizon={horizon} />
+        </div>
+
+        <PopulationChart primary={result} secondary={compareResult} />
+        <IncomeChart primary={result} secondary={compareResult} />
+
         {result.warnings.length > 0 && (
-          <div className="flex gap-3 rounded-sm border border-accent/30 bg-accent/5 p-4">
-            <AlertTriangle className="shrink-0 text-accent" size={20} />
-            <ul className="space-y-1 text-sm text-ink-muted">
-              {result.warnings.map((w) => (
-                <li key={w}>{w}</li>
-              ))}
-            </ul>
+          <div className="rounded-xl border border-orange/30 bg-orange/5 p-4 text-sm text-ink-muted">
+            {result.warnings.map((w) => (
+              <p key={w}>{w}</p>
+            ))}
           </div>
         )}
-
-        <TimelineScrubber
-          baselineYear={result.baselineYear}
-          maxYears={50}
-          yearIndex={yearIndex}
-          onChange={setYearIndex}
-          onHorizonJump={handleHorizonJump}
-          activeHorizon={horizon}
-        />
-
-        <SystemsPanel result={result} yearIndex={yearIndex} />
-
-        <ScenarioNarrative result={result} yearIndex={yearIndex} />
-
-        <MetricsGrid
-          result={result}
-          horizon={horizon}
-          compareResult={compareResult}
-        />
-
-        <ProjectionChart primary={result} secondary={compareResult} />
-        <PopulationAreaChart result={result} />
 
         <div className="flex flex-wrap gap-3 border-t border-border pt-6">
           <button
             type="button"
             onClick={exportJson}
-            className="inline-flex items-center gap-2 rounded-sm border border-border bg-white px-4 py-2.5 text-sm font-medium text-ink hover:border-sage"
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-medium text-ink hover:bg-paper-warm"
           >
             <Download size={16} />
-            Export JSON (citation-ready)
+            Download data
           </button>
           <button
             type="button"
             onClick={handleGenerateBrief}
             disabled={aiLoading}
-            className="inline-flex items-center gap-2 rounded-sm bg-ink px-4 py-2.5 text-sm font-medium text-paper hover:bg-slate-deep disabled:opacity-60"
+            className="inline-flex items-center gap-2 rounded-lg bg-ink px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-deep disabled:opacity-60"
           >
             <Sparkles size={16} />
-            {aiLoading
-              ? 'Generating…'
-              : isAuthenticated
-                ? 'AI policy brief'
-                : 'Sign in for AI brief'}
+            {aiLoading ? 'Generating…' : isAuthenticated ? 'AI summary' : 'Sign in for AI summary'}
           </button>
         </div>
 
         {aiBrief && (
-          <article className="rounded-sm border border-border bg-white p-6 shadow-sm">
-            <h3 className="font-display text-xl text-ink">AI policy brief</h3>
+          <article className="rounded-xl border border-border bg-white p-6">
+            <h3 className="text-base font-semibold text-ink">AI summary</h3>
             <div className="prose prose-sm mt-4 max-w-none whitespace-pre-wrap text-ink-muted">
               {aiBrief}
             </div>

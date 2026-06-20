@@ -1,8 +1,8 @@
-# Demographic Horizons
+# popline.fyi
 
-An open, neutral simulation platform for exploring how immigration and deportation policies affect population, economy, health, and wealth over **10, 20, and 50 year** horizons.
+Population projections by country and migration policy — over **10, 20, and 50 year** horizons.
 
-Built for researchers, students, and policymakers who need citation-ready demographic projections — without political bias.
+Built for researchers, students, and policymakers who need citation-ready demographic projections.
 
 ## Stack
 
@@ -52,7 +52,7 @@ npm test
 
 ## Deployment
 
-**Live:** https://demographic-horizons.vercel.app
+**Live:** https://popline.fyi
 
 ### Convex
 
@@ -73,6 +73,8 @@ npx convex deploy  # production (also runs via Vercel build:production)
 
 ### Vercel
 
+Point the production domain to `popline.fyi` in Vercel project settings, then:
+
 ```bash
 vercel --prod
 ```
@@ -82,8 +84,8 @@ See `.env.example` for the full variable map.
 ## Citation
 
 ```
-YAST AI. (2026). Demographic Horizons: An open migration policy simulation platform.
-Retrieved from https://demographic-horizons.org
+YAST AI. (2026). popline.fyi: Population projections by country and migration policy.
+Retrieved from https://popline.fyi
 ```
 
 ## Growth strategy (1M+ views)

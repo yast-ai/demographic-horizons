@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://demographic-horizons.org/sitemap.xml
+Sitemap: https://popline.fyi/sitemap.xml

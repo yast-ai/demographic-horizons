@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { COUNTRIES } from '#/lib/data/countries'
+import { SITE_NAME, SITE_URL } from '#/lib/site'
 
 export const Route = createFileRoute('/sources')({
   component: SourcesPage,
@@ -16,9 +17,9 @@ function SourcesPage() {
       <section className="mt-10">
         <h2 className="font-display text-2xl text-ink">How to cite</h2>
         <blockquote className="mt-4 rounded-sm border-l-4 border-accent bg-white p-5 font-mono text-xs leading-relaxed text-ink-muted">
-          YAST AI. (2026). <em>Demographic Horizons</em>: An open migration policy
-          simulation platform. Retrieved {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}, from
-          https://demographic-horizons.org/simulate
+          YAST AI. (2026). <em>{SITE_NAME}</em>: Population projections by country and
+          migration policy. Retrieved {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}, from{' '}
+          {SITE_URL}/simulate
         </blockquote>
         <p className="mt-4 text-sm text-ink-muted">
           For APA 7th edition. Include the access date and specific scenario

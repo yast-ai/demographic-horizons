@@ -50,7 +50,7 @@ export function PolicyDrawer({
         <div className="flex items-center justify-between border-b border-border px-5 py-4">
           <div className="flex items-center gap-2">
             <SlidersHorizontal size={18} className="text-accent" />
-            <h2 className="font-display text-xl text-ink">Policy pathways</h2>
+            <h2 className="text-lg font-semibold text-ink">Settings</h2>
           </div>
           <button
             type="button"

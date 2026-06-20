@@ -4,6 +4,13 @@ import ConvexProvider from '../integrations/convex/provider'
 import { PostHogProvider } from '../integrations/posthog/provider'
 import { SiteHeader } from '../components/layout/SiteHeader'
 import { SiteFooter } from '../components/layout/SiteFooter'
+import {
+  SITE_DESCRIPTION,
+  SITE_NAME,
+  SITE_OG_DESCRIPTION,
+  SITE_TITLE,
+  SITE_URL,
+} from '../lib/site'
 
 import appCss from '../styles.css?url'
 
@@ -16,21 +23,19 @@ export const Route = createRootRoute({
         content: 'width=device-width, initial-scale=1',
       },
       {
-        title: 'Demographic Horizons — Migration Policy Simulation',
+        title: SITE_TITLE,
       },
       {
         name: 'description',
-        content:
-          'Simulate how immigration and deportation policies affect population, economy, health, and wealth over 10, 20, and 50 years. Neutral, citation-ready research tool.',
+        content: SITE_DESCRIPTION,
       },
       {
         property: 'og:title',
-        content: 'Demographic Horizons — Migration Policy Simulation',
+        content: SITE_TITLE,
       },
       {
         property: 'og:description',
-        content:
-          'Explore long-run demographic futures under different migration policies. Built for researchers, students, and policymakers.',
+        content: SITE_OG_DESCRIPTION,
       },
       { property: 'og:type', content: 'website' },
       { name: 'twitter:card', content: 'summary_large_image' },
@@ -42,7 +47,7 @@ export const Route = createRootRoute({
     ],
     links: [
       { rel: 'stylesheet', href: appCss },
-      { rel: 'canonical', href: 'https://demographic-horizons.org' },
+      { rel: 'canonical', href: SITE_URL },
       {
         rel: 'preconnect',
         href: 'https://fonts.googleapis.com',
@@ -54,7 +59,7 @@ export const Route = createRootRoute({
       },
       {
         rel: 'stylesheet',
-        href: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap',
+        href: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap',
       },
     ],
   }),
@@ -82,17 +87,17 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       <head>
         <HeadContent />
       </head>
-      <body className="grain flex min-h-screen flex-col antialiased">
+      <body className="flex min-h-screen flex-col antialiased">
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               '@context': 'https://schema.org',
               '@type': 'WebApplication',
-              name: 'Demographic Horizons',
+              name: SITE_NAME,
               description:
-                'Cohort-based simulation of immigration and deportation policy effects on population, economy, health, and wealth over 10, 20, and 50 years.',
-              url: 'https://demographic-horizons.org',
+                'Cohort-based simulation of immigration policy effects on population, economy, health, and wealth over 10, 20, and 50 years.',
+              url: SITE_URL,
               applicationCategory: 'EducationalApplication',
               operatingSystem: 'Web',
               offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },

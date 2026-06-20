@@ -1,4 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { SITE_GITHUB, SITE_NAME } from '#/lib/site'
 
 export const Route = createFileRoute('/methodology')({
   component: MethodologyPage,
@@ -12,7 +13,7 @@ function MethodologyPage() {
       </p>
       <h1 className="mt-2 font-display text-4xl text-ink">Methodology</h1>
       <p className="mt-4 text-ink-muted leading-relaxed">
-        Demographic Horizons uses a transparent cohort-component model with annual
+        {SITE_NAME} uses a transparent cohort-component model with annual
         time steps. This page describes assumptions sufficient for academic
         replication and citation.
       </p>
@@ -74,12 +75,10 @@ function MethodologyPage() {
       </section>
 
       <section className="mt-10 space-y-4">
-        <h2 className="font-display text-2xl text-ink">4. Neutrality commitment</h2>
+        <h2 className="font-display text-2xl text-ink">4. Scope</h2>
         <p className="text-sm leading-relaxed text-ink-muted">
-          We do not rank countries, religions, or ethnic groups. Migration is
-          modeled as flows affecting aggregate indicators. Every scenario
-          surfaces trade-offs (e.g., short-run fiscal costs vs. long-run labor
-          supply). AI-generated briefs use neutral system prompts and require
+          Migration is modeled as flows affecting aggregate indicators. The model does not
+          rank countries, religions, or ethnic groups. AI-generated briefs require
           authenticated access for auditability.
         </p>
       </section>
@@ -91,7 +90,7 @@ function MethodologyPage() {
           (TypeScript)
         </p>
         <p className="mt-2 text-sm text-ink-muted">
-          Report methodology issues via GitHub Issues on yast-ai/demographic-horizons.
+          Report methodology issues via GitHub Issues on {SITE_GITHUB}.
         </p>
       </section>
     </article>

@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { SITE_URL } from '#/lib/site'
 
-const BASE = 'https://demographic-horizons.org'
+const BASE = SITE_URL
 
 const PAGES = [
   { loc: '/', priority: '1.0', changefreq: 'weekly' },

@@ -2,21 +2,23 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --font-display: "Instrument Serif", Georgia, "Times New Roman", serif;
-  --font-body: "IBM Plex Sans", system-ui, sans-serif;
-  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+  --font-display: "Inter", system-ui, sans-serif;
+  --font-body: "Inter", system-ui, sans-serif;
+  --font-mono: ui-monospace, monospace;
 
-  --color-ink: #0c1222;
-  --color-ink-muted: #3d4a63;
-  --color-paper: #f7f3eb;
-  --color-paper-warm: #efe8dc;
-  --color-accent: #c45c3a;
-  --color-accent-soft: #e8a48a;
-  --color-sage: #4a6b5d;
-  --color-sage-light: #7a9a8a;
-  --color-slate-deep: #1a2332;
-  --color-gold: #b8956a;
-  --color-border: rgba(12, 18, 34, 0.1);
+  --color-ink: #1a1a1a;
+  --color-ink-muted: #5f6368;
+  --color-paper: #ffffff;
+  --color-paper-warm: #f8f9fa;
+  --color-accent: #2563eb;
+  --color-accent-soft: #93c5fd;
+  --color-sage: #16a34a;
+  --color-sage-light: #86efac;
+  --color-slate-deep: #111827;
+  --color-gold: #ca8a04;
+  --color-orange: #ea580c;
+  --color-green: #16a34a;
+  --color-border: #e8eaed;
 }
 
 @layer base {
@@ -31,10 +33,9 @@
   body {
     margin: 0;
     font-family: var(--font-body);
-    background: var(--color-paper);
+    background: var(--color-paper-warm);
     color: var(--color-ink);
     -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
   }
 
   h1,
@@ -42,7 +43,7 @@
   h3,
   .font-display {
     font-family: var(--font-display);
-    font-weight: 400;
+    font-weight: 600;
     letter-spacing: -0.02em;
   }
 }
@@ -50,30 +51,5 @@
 @layer utilities {
   .text-balance {
     text-wrap: balance;
-  }
-
-  .grain {
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
-  }
-
-  .timeline-slider::-webkit-slider-thumb {
-    appearance: none;
-    width: 18px;
-    height: 18px;
-    border-radius: 2px;
-    background: var(--color-accent);
-    border: 2px solid var(--color-paper);
-    box-shadow: 0 1px 4px rgba(12, 18, 34, 0.2);
-    cursor: grab;
-  }
-
-  .timeline-slider::-moz-range-thumb {
-    width: 18px;
-    height: 18px;
-    border-radius: 2px;
-    background: var(--color-accent);
-    border: 2px solid var(--color-paper);
-    box-shadow: 0 1px 4px rgba(12, 18, 34, 0.2);
-    cursor: grab;
   }
 }
