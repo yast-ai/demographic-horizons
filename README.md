@@ -52,25 +52,32 @@ npm test
 
 ## Deployment
 
-### GitHub
-
-```bash
-git init
-git remote add origin git@github.com:yast-ai/demographic-horizons.git
-git push -u origin main
-```
-
-### Vercel
-
-1. Import `yast-ai/demographic-horizons` in Vercel
-2. Add environment variables from `.env.example`
-3. Deploy
+**Live:** https://demographic-horizons.vercel.app
 
 ### Convex
 
+| Deployment | URL |
+|------------|-----|
+| Dev | `https://robust-guineapig-942.convex.cloud` |
+| Prod | `https://graceful-jellyfish-679.convex.cloud` |
+
 ```bash
-npx convex deploy   # production only
+npx convex dev     # development
+npx convex deploy  # production (also runs via Vercel build:production)
 ```
+
+**Where env vars live:**
+- **Convex dev** (`npx convex env set`): `AI_GATEWAY_API_KEY` + WorkOS (auto-provisioned by AuthKit)
+- **Convex prod** (`npx convex env set --prod`): `AI_GATEWAY_API_KEY` + WorkOS (auto-provisioned on deploy)
+- **Vercel production only**: `CONVEX_DEPLOY_KEY`, `VITE_CONVEX_URL`, WorkOS server/client vars, PostHog
+
+### Vercel
+
+```bash
+vercel --prod
+```
+
+See `.env.example` for the full variable map.
 
 ## Citation
 
