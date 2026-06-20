@@ -1,6 +1,5 @@
 import { mutation, query } from './_generated/server'
 import { v } from 'convex/values'
-import { getCurrentUser } from './lib/auth'
 
 export const storeUser = mutation({
   args: {},

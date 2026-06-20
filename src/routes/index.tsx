@@ -54,6 +54,7 @@ function LandingPage() {
           <div className="mt-10 flex flex-wrap gap-4">
             <Link
               to="/simulate"
+              search={{ country: undefined, policy: undefined }}
               className="inline-flex items-center gap-2 rounded-sm bg-accent px-6 py-3.5 text-sm font-semibold text-white transition hover:bg-accent/90"
               onClick={() => captureEvent('cta_simulate_clicked', { source: 'hero' })}
             >
@@ -80,7 +81,7 @@ function LandingPage() {
               <Link
                 key={p.id}
                 to="/simulate"
-                search={{ country: p.id }}
+                search={{ country: p.id, policy: undefined }}
                 className="group rounded-sm border border-border p-5 transition hover:border-accent/40 hover:shadow-md"
               >
                 <p className="font-display text-xl text-ink group-hover:text-accent">
@@ -208,6 +209,7 @@ function LandingPage() {
         </ul>
         <Link
           to="/simulate"
+          search={{ country: undefined, policy: undefined }}
           className="mt-10 inline-flex items-center gap-2 text-sm font-semibold text-accent hover:underline"
         >
           Start exploring scenarios

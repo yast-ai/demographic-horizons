@@ -18,7 +18,7 @@ export function SiteFooter() {
           </p>
           <ul className="mt-4 space-y-2 text-sm text-paper/80">
             <li>
-              <Link to="/simulate" className="hover:text-accent-soft">
+              <Link to="/simulate" search={{ country: undefined, policy: undefined }} className="hover:text-accent-soft">
                 Run simulation
               </Link>
             </li>

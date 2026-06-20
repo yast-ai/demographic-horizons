@@ -104,7 +104,7 @@ function computeWealthIndex(
 
 function createSnapshot(
   year: number,
-  country: CountryBaseline,
+  _country: CountryBaseline,
   state: {
     population: number
     tfr: number
