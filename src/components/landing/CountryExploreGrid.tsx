@@ -19,7 +19,7 @@ export function CountryExploreGrid({ countries }: CountryExploreGridProps) {
           className="rounded-lg border border-border bg-white px-4 py-3 transition hover:border-accent hover:bg-paper-warm"
         >
           <p className="font-medium text-ink">{country.name}</p>
-          <p className="mt-0.5 text-xs text-ink-muted">{country.statusQuoM}M people by 2046</p>
+          <p className="mt-0.5 text-xs text-ink-muted">{country.statusQuoM}M people by 2076</p>
         </Link>
       ))}
     </div>

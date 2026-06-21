@@ -19,12 +19,31 @@ function MethodologyPage() {
       </p>
 
       <section className="mt-10 space-y-4">
-        <h2 className="font-display text-2xl text-ink">1. Model structure</h2>
+        <h2 className="font-display text-2xl text-ink">1. Century view (1976–2076)</h2>
         <p className="text-sm leading-relaxed text-ink-muted">
-          Each simulation begins from a country baseline (population, age
-          structure, TFR, life expectancy, GDP per capita, net migration rate,
-          health spending, and inequality). The engine advances one year at a
-          time for up to 50 years, updating:
+          Three layers combine into one timeline:
+        </p>
+        <ul className="list-inside list-disc space-y-2 text-sm text-ink-muted">
+          <li>
+            <strong>Recorded history (1976–2026)</strong> — UN-aligned population anchors
+            interpolated annually
+          </li>
+          <li>
+            <strong>Counterfactual past</strong> — cohort model re-run from 1976 with an
+            alternate migration policy to show how today could differ
+          </li>
+          <li>
+            <strong>Future projection (2026–2076)</strong> — 50-year forward simulation from
+            today&apos;s baseline with a selected policy
+          </li>
+        </ul>
+      </section>
+
+      <section className="mt-10 space-y-4">
+        <h2 className="font-display text-2xl text-ink">2. Model structure</h2>
+        <p className="text-sm leading-relaxed text-ink-muted">
+          Each forward step begins from a country baseline (population, age
+          structure, TFR, net migration rate) and advances one year at a time:
         </p>
         <ul className="list-inside list-disc space-y-2 text-sm text-ink-muted">
           <li>
@@ -38,22 +57,18 @@ function MethodologyPage() {
             refugee intake + deportation shocks
           </li>
           <li>
+            <strong>Economy (internal)</strong> — productivity and labor force feed back into
+            fertility dynamics; not shown in charts
+          </li>
+          <li>
             <strong>Age structure</strong> — youth / working / elderly shares
             evolve with cohort aging and migration age bias
-          </li>
-          <li>
-            <strong>Economy</strong> — GDP per capita from productivity growth,
-            labor force changes, and dependency drag
-          </li>
-          <li>
-            <strong>Health & wealth indices</strong> — composite 0–100 scores
-            from life expectancy, spending, capacity, inequality, and dependency
           </li>
         </ul>
       </section>
 
       <section className="mt-10 space-y-4">
-        <h2 className="font-display text-2xl text-ink">2. Policy scenarios</h2>
+        <h2 className="font-display text-2xl text-ink">3. Policy scenarios</h2>
         <p className="text-sm leading-relaxed text-ink-muted">
           Six preset migration policies calibrate net migration multipliers and
           short-run disruption terms. Users can further adjust integration
@@ -64,7 +79,7 @@ function MethodologyPage() {
       </section>
 
       <section className="mt-10 space-y-4">
-        <h2 className="font-display text-2xl text-ink">3. Uncertainty & limits</h2>
+        <h2 className="font-display text-2xl text-ink">4. Uncertainty & limits</h2>
         <p className="text-sm leading-relaxed text-ink-muted">
           All outputs are <em>projections under stated assumptions</em>, not
           forecasts. Uncertainty grows with horizon length. The model does not
@@ -75,7 +90,7 @@ function MethodologyPage() {
       </section>
 
       <section className="mt-10 space-y-4">
-        <h2 className="font-display text-2xl text-ink">4. Scope</h2>
+        <h2 className="font-display text-2xl text-ink">5. Scope</h2>
         <p className="text-sm leading-relaxed text-ink-muted">
           Migration is modeled as flows affecting aggregate indicators. The model does not
           rank countries, religions, or ethnic groups. AI-generated briefs require

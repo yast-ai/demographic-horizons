@@ -1,20 +1,24 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useConvexAuth, useAction, useMutation } from 'convex/react'
 import { Download, Settings2, Sparkles } from 'lucide-react'
 import { api } from '../../convex/_generated/api'
 import { DEFAULT_COUNTRY_ID, getCountryById } from '#/lib/data/countries'
-import { runSimulation, formatPopulation } from '#/lib/simulation/engine'
-import { buildScenario, MIGRATION_POLICY_LABELS, PRESET_SCENARIOS } from '#/lib/simulation/policies'
-import type { HorizonYears, MigrationPolicy } from '#/lib/simulation/types'
+import { formatPopulation } from '#/lib/simulation/engine'
+import { runCenturyView } from '#/lib/simulation/century'
+import { buildScenario, MIGRATION_POLICY_LABELS } from '#/lib/simulation/policies'
+import type { MigrationPolicy, YearSnapshot } from '#/lib/simulation/types'
+import { PRESENT_YEAR } from '#/lib/simulation/types'
 import { PolicyDrawer } from '#/components/simulation/PolicyDrawer'
-import { TimelineScrubber } from '#/components/simulation/TimelineScrubber'
 import {
-  HorizonTabs,
-  IncomeChart,
-  MetricsGrid,
-  PopulationChart,
-} from '#/components/simulation/ProjectionChart'
+  getSnapshotAtYear,
+  TimelineScrubber,
+} from '#/components/simulation/TimelineScrubber'
+import { CenturyMetrics } from '#/components/simulation/CenturyMetrics'
+import {
+  CenturyPopulationChart,
+  MigrationFlowChart,
+} from '#/components/charts/CenturyChart'
 import { captureEvent } from '#/integrations/posthog/provider'
 
 export const Route = createFileRoute('/simulate')({
@@ -28,18 +32,33 @@ export const Route = createFileRoute('/simulate')({
   component: SimulatePage,
 })
 
+/** Pad for Convex logging (legacy snapshot shape) */
+function toLegacySnapshot(s: YearSnapshot) {
+  return {
+    ...s,
+    lifeExpectancy: 0,
+    gdpPerCapita: 0,
+    gdpTotal: 0,
+    laborForceParticipation: 0,
+    healthIndex: 0,
+    wealthIndex: 0,
+    inequalityIndex: 0,
+    pensionBurden: 0,
+    healthcareCapacityIndex: 0,
+  }
+}
+
 function SimulatePage() {
   const { country: countryParam, policy: policyParam } = Route.useSearch()
   const [countryId, setCountryId] = useState(countryParam ?? DEFAULT_COUNTRY_ID)
-  const [migrationPolicy, setMigrationPolicy] = useState<MigrationPolicy>(
+  const [pastPolicy, setPastPolicy] = useState<MigrationPolicy>('moderate_immigration')
+  const [futurePolicy, setFuturePolicy] = useState<MigrationPolicy>(
     policyParam ?? 'status_quo',
   )
-  const [sliders, setSliders] = useState(PRESET_SCENARIOS.status_quo)
-  const [horizon, setHorizon] = useState<HorizonYears>(20)
-  const [yearIndex, setYearIndex] = useState(20)
   const [comparePolicy, setComparePolicy] = useState<MigrationPolicy | null>(
     'restrictive',
   )
+  const [yearIndex, setYearIndex] = useState(50)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [aiBrief, setAiBrief] = useState<string | null>(null)
   const [aiLoading, setAiLoading] = useState(false)
@@ -48,57 +67,49 @@ function SimulatePage() {
   const logRun = useMutation(api.scenarios.logSimulationRun)
   const generateBrief = useAction(api.ai.generatePolicyBrief)
 
-  const scenario = useMemo(
+  const pastScenario = useMemo(() => buildScenario(pastPolicy), [pastPolicy])
+  const futureScenario = useMemo(() => buildScenario(futurePolicy), [futurePolicy])
+  const compareScenario = useMemo(
+    () => (comparePolicy ? buildScenario(comparePolicy) : undefined),
+    [comparePolicy],
+  )
+
+  const century = useMemo(
     () =>
-      buildScenario(migrationPolicy, {
-        ...sliders,
-        migrationPolicy,
-      }),
-    [migrationPolicy, sliders],
+      runCenturyView(
+        countryId,
+        pastScenario,
+        futureScenario,
+        compareScenario,
+      ),
+    [countryId, pastScenario, futureScenario, compareScenario],
   )
-
-  const result = useMemo(
-    () => runSimulation(countryId, scenario, 50),
-    [countryId, scenario],
-  )
-
-  const compareResult = useMemo(() => {
-    if (!comparePolicy) return null
-    return runSimulation(countryId, buildScenario(comparePolicy), 50)
-  }, [countryId, comparePolicy])
 
   const country = getCountryById(countryId)
-  const yearSnap = result.trajectory[yearIndex] ?? result.baseline
+  const yearSnap = getSnapshotAtYear(century, 1976 + yearIndex)
 
   useEffect(() => {
-    setSliders(PRESET_SCENARIOS[migrationPolicy])
     captureEvent('simulation_run', {
       country: countryId,
-      policy: migrationPolicy,
+      pastPolicy,
+      futurePolicy,
     })
-  }, [migrationPolicy, countryId])
+  }, [pastPolicy, futurePolicy, countryId])
 
   useEffect(() => {
     if (!import.meta.env.VITE_CONVEX_URL) return
+    const baseline = toLegacySnapshot(century.future[0]!)
+    const horizon = toLegacySnapshot(century.future[century.future.length - 1]!)
     void logRun({
       countryId,
-      scenario,
-      baseline: result.baseline,
-      horizon10: result.horizons[10],
-      horizon20: result.horizons[20],
-      horizon50: result.horizons[50],
-      warnings: result.warnings,
+      scenario: futureScenario,
+      baseline,
+      horizon10: baseline,
+      horizon20: baseline,
+      horizon50: horizon,
+      warnings: century.warnings,
     }).catch(() => {})
-  }, [countryId, scenario, result, logRun])
-
-  const handleSliderChange = useCallback((key: string, value: number) => {
-    setSliders((prev) => ({ ...prev, [key]: value }))
-  }, [])
-
-  const handleHorizonJump = useCallback((h: HorizonYears) => {
-    setHorizon(h)
-    setYearIndex(h)
-  }, [])
+  }, [countryId, futureScenario, century, logRun])
 
   const handleGenerateBrief = async () => {
     if (!isAuthenticated) {
@@ -107,19 +118,19 @@ function SimulatePage() {
     }
     setAiLoading(true)
     try {
-      const h10 = result.horizons[10]
-      const h20 = result.horizons[20]
-      const h50 = result.horizons[50]
+      const today = century.recorded[century.recorded.length - 1]!
+      const y2076 = century.future[century.future.length - 1]!
+      const counter = century.counterfactualPast[century.counterfactualPast.length - 1]!
       const { brief } = await generateBrief({
-        countryName: result.countryName,
-        migrationPolicy: scenario.migrationPolicy,
-        horizon10Summary: `Pop ${(h10.population / 1e6).toFixed(1)}M, GDP/cap $${h10.gdpPerCapita.toLocaleString()}, health ${h10.healthIndex}, dependency ${h10.dependencyRatio}`,
-        horizon20Summary: `Pop ${(h20.population / 1e6).toFixed(1)}M, GDP/cap $${h20.gdpPerCapita.toLocaleString()}, health ${h20.healthIndex}, dependency ${h20.dependencyRatio}`,
-        horizon50Summary: `Pop ${(h50.population / 1e6).toFixed(1)}M, GDP/cap $${h50.gdpPerCapita.toLocaleString()}, health ${h50.healthIndex}, dependency ${h50.dependencyRatio}`,
-        warnings: result.warnings,
+        countryName: century.countryName,
+        migrationPolicy: futurePolicy,
+        horizon10Summary: `1976 pop ${formatPopulation(century.insights.population1976)}`,
+        horizon20Summary: `Today actual ${formatPopulation(today.population)} vs counterfactual ${formatPopulation(counter.population)} (gap ${formatPopulation(Math.abs(century.insights.pastPolicyGapToday))})`,
+        horizon50Summary: `2076 projected ${formatPopulation(y2076.population)} (${century.insights.futureChangePct.toFixed(1)}% from today), median age ${y2076.medianAge}`,
+        warnings: century.warnings,
       })
       setAiBrief(brief)
-      captureEvent('ai_brief_generated', { country: countryId, policy: migrationPolicy })
+      captureEvent('ai_brief_generated', { country: countryId, policy: futurePolicy })
     } catch (e) {
       setAiBrief(
         e instanceof Error ? e.message : 'Failed to generate brief. Check auth & API keys.',
@@ -130,16 +141,16 @@ function SimulatePage() {
   }
 
   const exportJson = () => {
-    const blob = new Blob([JSON.stringify(result, null, 2)], {
+    const blob = new Blob([JSON.stringify(century, null, 2)], {
       type: 'application/json',
     })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `popline-${countryId}-${migrationPolicy}.json`
+    a.download = `popline-century-${countryId}.json`
     a.click()
     URL.revokeObjectURL(url)
-    captureEvent('simulation_exported', { country: countryId, policy: migrationPolicy })
+    captureEvent('simulation_exported', { country: countryId, policy: futurePolicy })
   }
 
   return (
@@ -152,10 +163,11 @@ function SimulatePage() {
                 {country?.name}
               </h1>
               <p className="mt-1 text-sm text-ink-muted">
-                Policy: <strong className="text-ink">{MIGRATION_POLICY_LABELS[migrationPolicy]}</strong>
-                {comparePolicy && (
-                  <> · Comparing with <strong className="text-ink">{MIGRATION_POLICY_LABELS[comparePolicy]}</strong></>
-                )}
+                Past counterfactual:{' '}
+                <strong className="text-ink">{MIGRATION_POLICY_LABELS[pastPolicy]}</strong>
+                {' · '}
+                Future:{' '}
+                <strong className="text-ink">{MIGRATION_POLICY_LABELS[futurePolicy]}</strong>
               </p>
             </div>
             <button
@@ -164,43 +176,40 @@ function SimulatePage() {
               className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-medium text-ink hover:bg-paper-warm"
             >
               <Settings2 size={16} />
-              Change country or policy
+              Change policies
             </button>
           </div>
         </div>
       </section>
 
       <div className="mx-auto max-w-6xl space-y-6 px-4 py-8 sm:px-6">
-        {/* Plain-English summary */}
+        <CenturyPopulationChart result={century} />
+
         <div className="rounded-xl border border-border bg-white p-5">
-          <p className="text-sm text-ink-muted">In {yearSnap.year}, this country has</p>
+          <p className="text-sm text-ink-muted">
+            In {yearSnap.year}
+            {yearSnap.year === PRESENT_YEAR ? ' (today)' : ''}
+          </p>
           <p className="mt-1 text-xl font-semibold text-ink">
-            {formatPopulation(yearSnap.population)} people · median age {yearSnap.medianAge} · ${(yearSnap.gdpPerCapita / 1000).toFixed(0)}k income per person
+            {formatPopulation(yearSnap.population)} people · median age {yearSnap.medianAge} ·
+            TFR {yearSnap.tfr}
           </p>
         </div>
 
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <TimelineScrubber
-            baselineYear={result.baselineYear}
-            maxYears={50}
-            yearIndex={yearIndex}
-            onChange={setYearIndex}
-            onHorizonJump={handleHorizonJump}
-          />
-          <HorizonTabs horizon={horizon} onChange={(h) => { setHorizon(h); setYearIndex(h) }} />
-        </div>
+        <TimelineScrubber yearIndex={yearIndex} onChange={setYearIndex} />
 
         <div>
-          <p className="mb-3 text-sm font-medium text-ink-muted">Key numbers at {2026 + horizon}</p>
-          <MetricsGrid result={result} horizon={horizon} />
+          <p className="mb-3 text-sm font-medium text-ink-muted">
+            Key numbers in {yearSnap.year}
+          </p>
+          <CenturyMetrics result={century} yearSnap={yearSnap} />
         </div>
 
-        <PopulationChart primary={result} secondary={compareResult} />
-        <IncomeChart primary={result} secondary={compareResult} />
+        <MigrationFlowChart result={century} />
 
-        {result.warnings.length > 0 && (
+        {century.warnings.length > 0 && (
           <div className="rounded-xl border border-orange/30 bg-orange/5 p-4 text-sm text-ink-muted">
-            {result.warnings.map((w) => (
+            {century.warnings.map((w) => (
               <p key={w}>{w}</p>
             ))}
           </div>
@@ -213,7 +222,7 @@ function SimulatePage() {
             className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-medium text-ink hover:bg-paper-warm"
           >
             <Download size={16} />
-            Download data
+            Download century data
           </button>
           <button
             type="button"
@@ -241,10 +250,10 @@ function SimulatePage() {
         onClose={() => setDrawerOpen(false)}
         countryId={countryId}
         onCountryChange={setCountryId}
-        migrationPolicy={migrationPolicy}
-        onPolicyChange={setMigrationPolicy}
-        sliders={sliders}
-        onSliderChange={handleSliderChange}
+        pastPolicy={pastPolicy}
+        onPastPolicyChange={setPastPolicy}
+        futurePolicy={futurePolicy}
+        onFuturePolicyChange={setFuturePolicy}
         comparePolicy={comparePolicy}
         onCompareChange={setComparePolicy}
       />

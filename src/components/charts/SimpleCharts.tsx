@@ -135,7 +135,7 @@ export function PolicyCompareChart({ data }: PolicyCompareChartProps) {
             tick={{ fill: CHART.text, fontSize: 12 }}
             tickLine={false}
             tickFormatter={(v: number) => `${v}%`}
-            label={{ value: 'Population change', angle: -90, position: 'insideLeft', fill: CHART.text, fontSize: 11 }}
+            label={{ value: 'Population change by 2076', angle: -90, position: 'insideLeft', fill: CHART.text, fontSize: 11 }}
           />
           <Tooltip
             contentStyle={tooltipStyle}

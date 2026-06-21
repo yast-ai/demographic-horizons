@@ -1,4 +1,7 @@
-export type HorizonYears = 10 | 20 | 50
+export const PRESENT_YEAR = 2026
+export const HISTORY_START = 1976
+export const FUTURE_END = 2076
+export const PROJECTION_YEARS = 50
 
 export type MigrationPolicy =
   | 'status_quo'
@@ -42,6 +45,7 @@ export interface PolicyScenario {
   skilledMigrationShare: number
 }
 
+/** Population-focused snapshot — immigration & demographics only */
 export interface YearSnapshot {
   year: number
   population: number
@@ -50,16 +54,8 @@ export interface YearSnapshot {
   netMigration: number
   tfr: number
   medianAge: number
-  lifeExpectancy: number
-  gdpPerCapita: number
-  gdpTotal: number
   dependencyRatio: number
-  laborForceParticipation: number
-  healthIndex: number
-  wealthIndex: number
-  inequalityIndex: number
-  pensionBurden: number
-  healthcareCapacityIndex: number
+  elderlyPct: number
 }
 
 export interface SimulationResult {
@@ -68,21 +64,39 @@ export interface SimulationResult {
   baselineYear: number
   scenario: PolicyScenario
   baseline: YearSnapshot
-  horizons: Record<HorizonYears, YearSnapshot>
+  /** Snapshot at +50 years */
+  horizon: YearSnapshot
   trajectory: Array<YearSnapshot>
   warnings: Array<string>
   methodologyNotes: Array<string>
 }
 
-export interface CompareResult {
-  scenarios: Array<SimulationResult>
-  deltaAtHorizon: Record<
-    HorizonYears,
-    {
-      populationPct: number
-      gdpPerCapitaPct: number
-      healthIndexPct: number
-      dependencyRatioDelta: number
-    }
-  >
+export interface CenturyInsights {
+  population1976: number
+  populationTodayActual: number
+  populationTodayCounterfactual: number
+  population2076: number
+  pastPolicyGapToday: number
+  pastPolicyGapPctToday: number
+  futureChangePct: number
+  cumulativeMigration1976: number
+  cumulativeMigrationCounterfactual: number
+}
+
+export interface CenturyResult {
+  countryId: string
+  countryName: string
+  pastPolicy: PolicyScenario
+  futurePolicy: PolicyScenario
+  /** UN-aligned recorded population path, 1976–2026 */
+  recorded: Array<YearSnapshot>
+  /** Counterfactual: if pastPolicy had applied since 1976 */
+  counterfactualPast: Array<YearSnapshot>
+  /** Forward projection from actual 2026 with futurePolicy */
+  future: Array<YearSnapshot>
+  futureCompare?: Array<YearSnapshot>
+  /** Full 1976–2076 timeline for scrubber */
+  timeline: Array<YearSnapshot>
+  insights: CenturyInsights
+  warnings: Array<string>
 }
