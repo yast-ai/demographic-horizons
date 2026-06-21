@@ -42,7 +42,7 @@ export const Route = createRootRoute({
       {
         name: 'keywords',
         content:
-          'immigration simulation, demographic projection, deportation policy, population forecast, migration policy research',
+          'immigration population, migration policy simulation, demographic projection, population forecast, public policy research, century view',
       },
     ],
     links: [
@@ -95,8 +95,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
               '@context': 'https://schema.org',
               '@type': 'WebApplication',
               name: SITE_NAME,
-              description:
-                'Cohort-based simulation of immigration policy effects on population, economy, health, and wealth over 10, 20, and 50 years.',
+              description: SITE_DESCRIPTION,
               url: SITE_URL,
               applicationCategory: 'EducationalApplication',
               operatingSystem: 'Web',

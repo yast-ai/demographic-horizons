@@ -1,5 +1,5 @@
 import { Link } from '@tanstack/react-router'
-import { SITE_NAME, SITE_URL } from '#/lib/site'
+import { SITE_NAME, SITE_TAGLINE, SITE_URL } from '#/lib/site'
 
 export function SiteFooter() {
   return (
@@ -8,7 +8,8 @@ export function SiteFooter() {
         <div>
           <p className="font-semibold text-ink">{SITE_NAME}</p>
           <p className="mt-2 text-sm leading-relaxed text-ink-muted">
-            Migration policy simulation for researchers, students, and policymakers.
+            {SITE_TAGLINE} A free public resource for policymakers, researchers,
+            students, and anyone curious about how immigration and population connect.
           </p>
         </div>
         <div>
@@ -39,7 +40,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-border py-4 text-center text-xs text-ink-muted">
-        © {new Date().getFullYear()} YAST AI · Projections, not predictions
+        © {new Date().getFullYear()} YAST AI · Public benefit · Projections, not predictions
       </div>
     </footer>
   )

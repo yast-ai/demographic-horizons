@@ -21,8 +21,13 @@ export const CHART = {
   blue: '#2563eb',
   orange: '#ea580c',
   green: '#16a34a',
+  red: '#dc2626',
   muted: '#94a3b8',
 } as const
+
+export function changeColor(value: number): string {
+  return value >= 0 ? CHART.green : CHART.red
+}
 
 const tooltipStyle = {
   background: '#fff',
@@ -149,8 +154,16 @@ export function PolicyCompareChart({ data }: PolicyCompareChartProps) {
             wrapperStyle={{ fontSize: 12 }}
             formatter={(value: string) => (value === 'restrictive' ? 'Restrictive policy' : 'More immigration')}
           />
-          <Bar dataKey="restrictive" fill={CHART.orange} radius={[4, 4, 0, 0]} maxBarSize={28} />
-          <Bar dataKey="expansion" fill={CHART.blue} radius={[4, 4, 0, 0]} maxBarSize={28} />
+          <Bar dataKey="restrictive" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false}>
+            {data.map((entry) => (
+              <Cell key={`r-${entry.country}`} fill={changeColor(entry.restrictive)} />
+            ))}
+          </Bar>
+          <Bar dataKey="expansion" radius={[4, 4, 0, 0]} maxBarSize={28} isAnimationActive={false}>
+            {data.map((entry) => (
+              <Cell key={`e-${entry.country}`} fill={changeColor(entry.expansion)} />
+            ))}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -182,7 +195,7 @@ export function CountryPopulationChart({ data }: CountryPopulationChartProps) {
             type="number"
             tick={{ fill: CHART.text, fontSize: 12 }}
             tickFormatter={(v: number) => `${v}M`}
-            label={{ value: 'Population in 2046 (millions)', position: 'insideBottom', offset: -4, fill: CHART.text, fontSize: 11 }}
+            label={{ value: 'Population in 2076 (millions)', position: 'insideBottom', offset: -4, fill: CHART.text, fontSize: 11 }}
           />
           <YAxis
             type="category"
@@ -215,9 +228,23 @@ export function CountryPopulationChart({ data }: CountryPopulationChartProps) {
                   : 'More immigration'
             }
           />
-          <Bar dataKey="statusQuoM" fill={CHART.muted} radius={[0, 4, 4, 0]} maxBarSize={10} />
-          <Bar dataKey="restrictiveM" fill={CHART.orange} radius={[0, 4, 4, 0]} maxBarSize={10} />
-          <Bar dataKey="expansionM" fill={CHART.blue} radius={[0, 4, 4, 0]} maxBarSize={10} />
+          <Bar dataKey="statusQuoM" fill={CHART.muted} radius={[0, 4, 4, 0]} maxBarSize={10} isAnimationActive={false} />
+          <Bar dataKey="restrictiveM" radius={[0, 4, 4, 0]} maxBarSize={10} isAnimationActive={false}>
+            {data.map((entry) => (
+              <Cell
+                key={`r-${entry.name}`}
+                fill={changeColor(entry.restrictiveM - entry.statusQuoM)}
+              />
+            ))}
+          </Bar>
+          <Bar dataKey="expansionM" radius={[0, 4, 4, 0]} maxBarSize={10} isAnimationActive={false}>
+            {data.map((entry) => (
+              <Cell
+                key={`e-${entry.name}`}
+                fill={changeColor(entry.expansionM - entry.statusQuoM)}
+              />
+            ))}
+          </Bar>
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -296,7 +323,7 @@ export function Stat({ label, value, hint, trend, trendUp }: StatProps) {
       <p className="mt-1 text-2xl font-semibold tabular-nums text-ink">{value}</p>
       {hint && <p className="mt-1 text-xs text-ink-muted">{hint}</p>}
       {trend && (
-        <p className={`mt-1 text-xs font-medium ${trendUp ? 'text-green' : 'text-orange'}`}>
+        <p className={`mt-1 text-xs font-medium ${trendUp ? 'text-green' : 'text-red'}`}>
           {trend}
         </p>
       )}

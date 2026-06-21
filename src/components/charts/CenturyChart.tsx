@@ -1,6 +1,7 @@
 import {
-  Area,
+  Bar,
   CartesianGrid,
+  Cell,
   ComposedChart,
   Legend,
   Line,
@@ -11,7 +12,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { CHART } from '#/components/charts/SimpleCharts'
+import { CHART, changeColor } from '#/components/charts/SimpleCharts'
 import type { CenturyResult } from '#/lib/simulation/types'
 import { PRESENT_YEAR } from '#/lib/simulation/types'
 import { formatPopulation } from '#/lib/simulation/engine'
@@ -34,9 +35,10 @@ export function CenturyPopulationChart({ result }: CenturyPopulationChartProps) 
 
   return (
     <div className="rounded-xl border border-border bg-white p-5 sm:p-6">
-      <h3 className="text-base font-semibold text-ink">100 years of population</h3>
+      <h3 className="text-base font-semibold text-ink">Immigration & population — 100 years</h3>
       <p className="mt-1 text-sm text-ink-muted">
-        Recorded history (1976–2026) · counterfactual past · projected future (2026–2076)
+        How migration shaped headcount: recorded history (1976–2026), counterfactual past
+        policies, and projected future (2026–2076)
       </p>
       <div className="mt-5 h-[380px] w-full">
         <ResponsiveContainer width="100%" height="100%">
@@ -167,23 +169,42 @@ export function CenturyPopulationChart({ result }: CenturyPopulationChartProps) 
               ? `${result.insights.pastPolicyGapToday > 0 ? '+' : ''}${formatPopulation(result.insights.pastPolicyGapToday)} vs alternate past policy`
               : 'Same as alternate past policy'
           }
+          subDelta={result.insights.pastPolicyGapToday}
         />
         <Insight
           label="2076 projection"
           value={formatPopulation(result.insights.population2076)}
           sub={`${result.insights.futureChangePct >= 0 ? '+' : ''}${result.insights.futureChangePct.toFixed(1)}% from today`}
+          subDelta={result.insights.futureChangePct}
         />
       </div>
     </div>
   )
 }
 
-function Insight({ label, value, sub }: { label: string; value: string; sub?: string }) {
+function Insight({
+  label,
+  value,
+  sub,
+  subDelta,
+}: {
+  label: string
+  value: string
+  sub?: string
+  subDelta?: number
+}) {
+  const subColor =
+    subDelta !== undefined && subDelta !== 0
+      ? subDelta > 0
+        ? 'text-green'
+        : 'text-red'
+      : 'text-ink-muted'
+
   return (
     <div className="text-sm">
       <p className="text-ink-muted">{label}</p>
       <p className="mt-0.5 font-semibold tabular-nums text-ink">{value}</p>
-      {sub && <p className="mt-0.5 text-xs text-ink-muted">{sub}</p>}
+      {sub && <p className={`mt-0.5 text-xs font-medium ${subColor}`}>{sub}</p>}
     </div>
   )
 }
@@ -197,9 +218,9 @@ export function MigrationFlowChart({ result }: MigrationFlowChartProps) {
 
   return (
     <div className="rounded-xl border border-border bg-white p-5 sm:p-6">
-      <h3 className="text-base font-semibold text-ink">Net migration flow</h3>
+      <h3 className="text-base font-semibold text-ink">Net immigration flow</h3>
       <p className="mt-1 text-sm text-ink-muted">
-        Annual net migrants — recorded estimate vs counterfactual past policy
+        Annual net migrants — green inflow, red outflow; recorded vs counterfactual past policy
       </p>
       <div className="mt-5 h-56 w-full">
         <ResponsiveContainer width="100%" height="100%">
@@ -210,21 +231,36 @@ export function MigrationFlowChart({ result }: MigrationFlowChartProps) {
               tick={{ fill: CHART.text, fontSize: 11 }}
               tickFormatter={(v: number) => `${v >= 0 ? '+' : ''}${v}M`}
             />
-            <Tooltip contentStyle={tooltipStyle} />
-            <ReferenceLine x={PRESENT_YEAR} stroke={CHART.ink} strokeDasharray="4 4" />
-            <Area
-              type="monotone"
-              dataKey="recorded"
-              name="Recorded est."
-              fill={CHART.muted}
-              fillOpacity={0.25}
-              stroke={CHART.muted}
-              strokeWidth={1.5}
+            <Tooltip
+              contentStyle={tooltipStyle}
+              formatter={(v, name) => {
+                const num = typeof v === 'number' ? v : 0
+                const labels: Record<string, string> = {
+                  recorded: 'Recorded est.',
+                  counterfactual: 'Counterfactual',
+                  future: 'Future projection',
+                }
+                return [`${num >= 0 ? '+' : ''}${num}M`, labels[String(name)] ?? String(name)]
+              }}
             />
+            <ReferenceLine y={0} stroke={CHART.ink} strokeOpacity={0.35} />
+            <ReferenceLine x={PRESENT_YEAR} stroke={CHART.ink} strokeDasharray="4 4" />
+            <Bar dataKey="recorded" name="recorded" maxBarSize={6} isAnimationActive={false}>
+              {data.map((entry) => (
+                <Cell
+                  key={`rec-${entry.year}`}
+                  fill={
+                    entry.recorded !== undefined
+                      ? changeColor(entry.recorded)
+                      : 'transparent'
+                  }
+                />
+              ))}
+            </Bar>
             <Line
               type="monotone"
               dataKey="counterfactual"
-              name="Counterfactual"
+              name="counterfactual"
               stroke={CHART.orange}
               strokeWidth={2}
               strokeDasharray="5 3"
@@ -233,7 +269,7 @@ export function MigrationFlowChart({ result }: MigrationFlowChartProps) {
             <Line
               type="monotone"
               dataKey="future"
-              name="Future"
+              name="future"
               stroke={CHART.blue}
               strokeWidth={2}
               dot={false}

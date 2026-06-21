@@ -13,9 +13,11 @@ function MethodologyPage() {
       </p>
       <h1 className="mt-2 font-display text-4xl text-ink">Methodology</h1>
       <p className="mt-4 text-ink-muted leading-relaxed">
-        {SITE_NAME} uses a transparent cohort-component model with annual
-        time steps. This page describes assumptions sufficient for academic
-        replication and citation.
+        {SITE_NAME} is a free public tool showing how immigration policy drives population
+        change. It uses a transparent cohort-component model with annual time steps — designed
+        for policymakers, researchers, students, and anyone exploring the link between migration
+        and headcount. This page describes assumptions sufficient for academic replication and
+        citation.
       </p>
 
       <section className="mt-10 space-y-4">

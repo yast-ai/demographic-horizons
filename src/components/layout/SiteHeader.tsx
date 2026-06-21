@@ -1,7 +1,8 @@
 import { Link } from '@tanstack/react-router'
 import { Menu, X } from 'lucide-react'
 import { useState } from 'react'
-import { useAuth } from '@workos/authkit-tanstack-react-start/client'
+// Auth disabled — public benefit site, no sign-in required
+// import { useAuth } from '@workos/authkit-tanstack-react-start/client'
 import { SITE_NAME } from '#/lib/site'
 
 const NAV = [
@@ -12,7 +13,7 @@ const NAV = [
 
 export function SiteHeader() {
   const [open, setOpen] = useState(false)
-  const { user, loading } = useAuth()
+  // const { user, loading } = useAuth()
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-white">
@@ -33,6 +34,7 @@ export function SiteHeader() {
               {item.label}
             </Link>
           ))}
+          {/* Sign-in disabled — no account needed to explore data
           {!loading && (
             user ? (
               <span className="text-sm text-ink-muted">{user.firstName ?? 'Account'}</span>
@@ -45,6 +47,7 @@ export function SiteHeader() {
               </a>
             )
           )}
+          */}
         </nav>
 
         <button
@@ -71,14 +74,6 @@ export function SiteHeader() {
                 {item.label}
               </Link>
             ))}
-            {!loading && !user && (
-              <a
-                href="/api/auth/sign-in?returnPathname=/simulate"
-                className="mt-2 inline-flex w-fit rounded-lg bg-ink px-4 py-2 text-sm font-medium text-white"
-              >
-                Sign in
-              </a>
-            )}
           </nav>
         </div>
       )}

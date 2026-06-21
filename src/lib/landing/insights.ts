@@ -120,7 +120,8 @@ export function getGlobalHeadlineStats() {
     totalCountries: COUNTRIES.length,
     avgTfr: avgTfr.toFixed(2),
     usaPastGap: Math.abs(usa.insights.pastPolicyGapToday / 1_000_000).toFixed(1),
-    usaFutureSpread: usa.insights.futureChangePct.toFixed(1),
+    usaPastGapSigned: usa.insights.pastPolicyGapToday / 1_000_000,
+    usaFutureSpread: usa.insights.futureChangePct,
     presentYear: PRESENT_YEAR,
   }
 }

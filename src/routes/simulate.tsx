@@ -1,7 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
-import { useConvexAuth, useAction, useMutation } from 'convex/react'
-import { Download, Settings2, Sparkles } from 'lucide-react'
+import { useMutation } from 'convex/react'
+import { Download, Settings2 } from 'lucide-react'
+// AI brief disabled — public site, no sign-in required
+// import { useConvexAuth, useAction } from 'convex/react'
+// import { Sparkles } from 'lucide-react'
 import { api } from '../../convex/_generated/api'
 import { DEFAULT_COUNTRY_ID, getCountryById } from '#/lib/data/countries'
 import { formatPopulation } from '#/lib/simulation/engine'
@@ -60,12 +63,13 @@ function SimulatePage() {
   )
   const [yearIndex, setYearIndex] = useState(50)
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [aiBrief, setAiBrief] = useState<string | null>(null)
-  const [aiLoading, setAiLoading] = useState(false)
+  // AI brief disabled — requires sign-in
+  // const [aiBrief, setAiBrief] = useState<string | null>(null)
+  // const [aiLoading, setAiLoading] = useState(false)
+  // const { isAuthenticated } = useConvexAuth()
+  // const generateBrief = useAction(api.ai.generatePolicyBrief)
 
-  const { isAuthenticated } = useConvexAuth()
   const logRun = useMutation(api.scenarios.logSimulationRun)
-  const generateBrief = useAction(api.ai.generatePolicyBrief)
 
   const pastScenario = useMemo(() => buildScenario(pastPolicy), [pastPolicy])
   const futureScenario = useMemo(() => buildScenario(futurePolicy), [futurePolicy])
@@ -111,6 +115,7 @@ function SimulatePage() {
     }).catch(() => {})
   }, [countryId, futureScenario, century, logRun])
 
+  /* AI brief disabled — public benefit site, no account required
   const handleGenerateBrief = async () => {
     if (!isAuthenticated) {
       window.location.href = '/api/auth/sign-in?returnPathname=/simulate'
@@ -139,6 +144,7 @@ function SimulatePage() {
       setAiLoading(false)
     }
   }
+  */
 
   const exportJson = () => {
     const blob = new Blob([JSON.stringify(century, null, 2)], {
@@ -159,10 +165,18 @@ function SimulatePage() {
         <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-2xl font-semibold text-ink sm:text-3xl">
+              <p className="text-xs font-semibold uppercase tracking-widest text-sage">
+                Immigration & population simulation
+              </p>
+              <h1 className="mt-2 text-2xl font-semibold text-ink sm:text-3xl">
                 {country?.name}
               </h1>
-              <p className="mt-1 text-sm text-ink-muted">
+              <p className="mt-2 max-w-xl text-sm leading-relaxed text-ink-muted">
+                See how migration policy shaped the past 50 years, how different choices would
+                change today, and where population goes over the next 50. Free for research
+                and public awareness — no account needed.
+              </p>
+              <p className="mt-2 text-sm text-ink-muted">
                 Past counterfactual:{' '}
                 <strong className="text-ink">{MIGRATION_POLICY_LABELS[pastPolicy]}</strong>
                 {' · '}
@@ -173,7 +187,7 @@ function SimulatePage() {
             <button
               type="button"
               onClick={() => setDrawerOpen(true)}
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-medium text-ink hover:bg-paper-warm"
+              className="inline-flex shrink-0 items-center gap-2 rounded-lg border border-border bg-white px-4 py-2.5 text-sm font-medium text-ink hover:bg-paper-warm"
             >
               <Settings2 size={16} />
               Change policies
@@ -224,6 +238,7 @@ function SimulatePage() {
             <Download size={16} />
             Download century data
           </button>
+          {/* AI summary disabled — requires sign-in
           <button
             type="button"
             onClick={handleGenerateBrief}
@@ -233,16 +248,17 @@ function SimulatePage() {
             <Sparkles size={16} />
             {aiLoading ? 'Generating…' : isAuthenticated ? 'AI summary' : 'Sign in for AI summary'}
           </button>
+          */}
         </div>
 
-        {aiBrief && (
+        {/* {aiBrief && (
           <article className="rounded-xl border border-border bg-white p-6">
             <h3 className="text-base font-semibold text-ink">AI summary</h3>
             <div className="prose prose-sm mt-4 max-w-none whitespace-pre-wrap text-ink-muted">
               {aiBrief}
             </div>
           </article>
-        )}
+        )} */}
       </div>
 
       <PolicyDrawer
